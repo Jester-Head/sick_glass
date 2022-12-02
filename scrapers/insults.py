@@ -1,7 +1,8 @@
 import os
 from time import sleep
 from random import randint
-
+import spacy
+from better_profanity import profanity
 import pandas as pd
 import undetected_chromedriver.v2 as uc
 from selenium import webdriver
@@ -90,7 +91,10 @@ def clean_data(df):
     df['insult']=df['insult'].str.strip()
     return df
     
-        
+def nsfw_check(df):
+    profanity.load_censor_words(whitelist_words=['fart','jerk','poop','vulgar','turd','scum','tampon','crap','stupid'])
+    profanity_insults = df[df['insult'].apply(profanity.contains_profanity)]
+    return profanity_insults
 def main():
 
     driver = create_chrome_driver()
@@ -138,6 +142,9 @@ def main():
     
     df = pd.concat([df1,df2,df3,df4,df5], ignore_index=True, sort=False)
     df = clean_data(df)
+    
+    
+    
     save_data(data = df,filename=file)
     driver.quit()
     
